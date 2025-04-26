@@ -112,7 +112,10 @@ Example:
 Ruby's,East Village,Brunch;Lunch,Western,Medium,9:00,23:00
 ```
 
+✅ Use commas `,` to separate the fields.
+
 ✅ Use semicolons `;` to separate multiple areas, meals, types, or prices.
+
 ✅ Times must be in **24-hour `HH:MM` format** (e.g., `11:00`, `21:45`).
 
 ## 🚀 Future Plans
