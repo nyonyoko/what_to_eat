@@ -223,15 +223,25 @@
         }
       }
 
-      function timeUntilClose(open, close, currentHour) {
-        let closingHour = close;
-        if (open > close) {
-          closingHour += 24;
+      function timeUntilClose(open, close, currentTime) {
+        // convert everything into absolute minutes
+        const openMins = open.hour * 60 + open.minute;
+        let closeMins = close.hour * 60 + close.minute;
+        const nowMins = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+        // if the restaurant closes after midnight, bump closeMins by a day
+        if (closeMins <= openMins) closeMins += 24 * 60;
+
+        // if we're before opening, show time until it opens
+        if (nowMins < openMins) {
+          return Math.ceil((openMins - nowMins) / 60);
         }
-        if (currentHour < open) {
-          currentHour += 24;
+        // otherwise show time until closing
+        if (nowMins <= closeMins) {
+          return Math.ceil((closeMins - nowMins) / 60);
         }
-        return closingHour - currentHour;
+        // already closed
+        return 0;
       }
 
       function updateAvailableList() {
@@ -329,8 +339,8 @@
             selected.close,
             now
           );
-
-          if (!isOpenNow(selected.open, selected.close, currentHour)) {
+          const openNow = isOpenNow(selected.open, selected.close, now);
+          if (!openNow) {
             status = "❌ Closed";
             badgeClass = "closed";
           } else if (hoursUntilClose <= 1) {
@@ -341,11 +351,7 @@
             badgeClass = "open";
           }
 
-          const closingCountdown = isOpenNow(
-            selected.open,
-            selected.close,
-            currentHour
-          )
+          const closingCountdown = openNow
             ? `<br>⏳ Closing in ~${hoursUntilClose} hour(s)`
             : "";
 
