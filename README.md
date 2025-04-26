@@ -1,3 +1,5 @@
+> _"Can't decide where to eat? Let randomness decide for you!"_
+
 # Random Restaurant Picker 🍴
 
 This is a simple, responsive website that helps users **randomly pick a restaurant** based on **filters** like area, meal type, cuisine type, price level, and real-time opening hours. I built this to prevent me from wasting too much time thinking about what to eat every day. Currently, it contains a list of restaurants in the New York City area. All restaurant information is stored in a **CSV file** (`restaurants.csv`) for convenience to expand.
@@ -59,6 +61,7 @@ This is a simple, responsive website that helps users **randomly pick a restaura
 / (root)
 ├── index.html        # Main website file
 ├── restaurants.csv   # Restaurant data
+├── screenshot.png    # Screenshot of the website
 └── README.md         # This file
 ```
 
@@ -106,7 +109,7 @@ name,area,meals,type,price,open,close
 Example:
 
 ```csv
-New Thai Spot,"Ktown;Flushing","Lunch;Dinner",Thai,Medium,11:00,22:00
+Ruby's,East Village,Brunch;Lunch,Western,Medium,9:00,23:00
 ```
 
 ✅ Use semicolons `;` to separate multiple areas, meals, types, or prices.
@@ -114,10 +117,13 @@ New Thai Spot,"Ktown;Flushing","Lunch;Dinner",Thai,Medium,11:00,22:00
 
 ## 🚀 Future Plans
 
-- Allow users to **add new restaurants directly** from the website interface.
+- Allow users to add new restaurants directly from the website interface.
 - Add Google Maps links for selected restaurants.
 - Show restaurant images or logos.
-- Allow multiple selections in filters (e.g., pick both Korean and Chinese at once).
+- Allow multiple selections in filters.
+- Add a search function.
+- Move restaurant data to the backend to improve security and privacy.
+- Support user accounts and favorites.
 
 ## 📷 Screenshot
 
