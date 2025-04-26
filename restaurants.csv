@@ -1,0 +1,11 @@
+name,area,meal,type,price,open,close
+Chowhouse,East Village,Lunch;Dinner,Chinese,Cheap;Medium,11:00,21:45
+Ruby's,East Village,Brunch;Lunch,Western,Medium,9:00,23:00
+Nan Xiang Xiao Long Bao,Flushing;East Village,Breakfast;Lunch;Dinner,Chinese,Medium,9:00,23:45
+Da Si Chuan,Jersey City,Lunch;Dinner,Chinese,Medium,11:30,21:30
+BCD Tofu House,Ktown,Lunch;Dinner,Korean,Medium,10:30,1:00
+Jongro,Ktown,Lunch;Dinner,Korean,Expensive,11:30,0:00
+Paris Baguette,Ktown;Long Island City,Breakfast;Brunch;Lunch,Western,Cheap,6:00,22:00
+Lunar,Ktown;Times Square,Lunch;Dinner,Chinese,Medium;Expensive,11:30,21:45
+Ye Yan,Long Island City,Lunch;Dinner,Chinese,Medium,11:30,22:00
+Jing Li,Long Island City,Lunch;Dinner,Chinese,Medium,11:30,1:00

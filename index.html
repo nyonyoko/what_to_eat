@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+    <title>Random Restaurant Picker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 30px;
+        text-align: center;
+        margin: 0;
+      }
+
+      button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 8px;
+      }
+
+      select {
+        margin: 10px;
+        padding: 8px;
+        font-size: 16px;
+        border-radius: 8px;
+      }
+
+      #result {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+      }
+
+      #availableList {
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        color: white;
+        margin-top: 5px;
+      }
+
+      .open {
+        background-color: #28a745;
+      }
+      .closing {
+        background-color: #fd7e14;
+      }
+      .closed {
+        background-color: #dc3545;
+      }
+
+      #spinner {
+        font-size: 40px;
+        animation: spin 1s linear infinite;
+        display: none;
+        margin-top: 20px;
+      }
+
+      /* Spinner Animation */
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 📱 Responsive Design */
+      @media (max-width: 600px) {
+        button,
+        select {
+          width: 90%;
+          font-size: 18px;
+        }
+        #availableList,
+        #result {
+          font-size: 20px;
+        }
+        #availableList {
+          margin-bottom: 30px;
+        }
+        body {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Random Restaurant Picker 🍴</h1>
+    <p>
+      We are randomly selecting from the list of currently open restaurants
+      below:
+    </p>
+
+    <!-- Available list -->
+    <div id="availableList">Loading...</div>
+
+    <!-- Filter controls -->
+    <div>
+      <label for="areaFilter">Area:</label>
+      <select id="areaFilter" onchange="updateAvailableList()">
+        <option value="">No Filter</option>
+        <option value="East Village">East Village</option>
+        <option value="Ktown">Ktown</option>
+        <option value="Times Square">Times Square</option>
+        <option value="Long Island City">Long Island City</option>
+        <option value="Jersey City">Jersey City</option>
+        <option value="Flushing">Flushing</option>
+      </select>
+
+      <label for="mealFilter">Meal:</label>
+      <select id="mealFilter" onchange="updateAvailableList()">
+        <option value="">No Filter</option>
+        <option value="Breakfast">Breakfast</option>
+        <option value="Brunch">Brunch</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Dinner">Dinner</option>
+      </select>
+      <label for="typeFilter">Type:</label>
+      <select id="typeFilter" onchange="updateAvailableList()">
+        <option value="">No Filter</option>
+        <option value="Chinese">Chinese</option>
+        <option value="Korean">Korean</option>
+        <option value="Thai">Thai</option>
+        <option value="Western">Western</option>
+        <option value="Fast Food">Fast Food</option>
+      </select>
+
+      <label for="priceFilter">Price:</label>
+      <select id="priceFilter" onchange="updateAvailableList()">
+        <option value="">No Filter</option>
+        <option value="Cheap">Cheap</option>
+        <option value="Medium">Medium</option>
+        <option value="Expensive">Expensive</option>
+      </select>
+
+      <button onclick="clearFilters()">Clear Filters</button>
+    </div>
+
+    <!-- Action buttons -->
+    <div>
+      <button onclick="pickRestaurant()">Pick One</button>
+      <button id="clearResultBtn" onclick="clearResult()" style="display: none">
+        Clear Result
+      </button>
+    </div>
+
+    <!-- Spinner Animation -->
+    <div id="spinner">🎲</div>
+
+    <!-- Selected restaurant display -->
+    <div id="result"></div>
+
+    <script>
+      let restaurants = [];
+
+      Papa.parse("restaurants.csv", {
+        download: true,
+        header: true,
+        complete: function (results) {
+          restaurants = results.data.map((r) => ({
+            name: r.name,
+            area: r.area.includes(";")
+              ? r.area.split(";").map((s) => s.trim())
+              : r.area.trim(),
+            meal: r.meal.includes(";")
+              ? r.meal.split(";").map((s) => s.trim())
+              : [r.meal.trim()],
+            type: r.type.includes(";")
+              ? r.type.split(";").map((s) => s.trim())
+              : [r.type.trim()],
+            price: r.price.includes(";")
+              ? r.price.split(";").map((s) => s.trim())
+              : [r.price.trim()],
+            open: parseTime(r.open),
+            close: parseTime(r.close),
+          }));
+
+          updateAvailableList(); // Now that data is ready, update the page
+        },
+      });
+
+      function parseTime(timeStr) {
+        const [hour, minute] = timeStr.split(":").map((x) => parseInt(x));
+        return { hour, minute };
+      }
+
+      function formatHour(timeObj) {
+        const hour24 = timeObj.hour;
+        const minute = timeObj.minute;
+        const suffix = hour24 >= 12 ? "PM" : "AM";
+        const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+        const minuteStr = minute.toString().padStart(2, "0");
+        return `${hour12}:${minuteStr} ${suffix}`;
+      }
+
+      function isOpenNow(open, close, currentTime) {
+        const openMinutes = open.hour * 60 + open.minute;
+        const closeMinutes = close.hour * 60 + close.minute;
+        const currentMinutes =
+          currentTime.getHours() * 60 + currentTime.getMinutes();
+
+        if (openMinutes < closeMinutes) {
+          return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+        } else {
+          // Cross-midnight
+          return currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+        }
+      }
+
+      function timeUntilClose(open, close, currentHour) {
+        let closingHour = close;
+        if (open > close) {
+          closingHour += 24;
+        }
+        if (currentHour < open) {
+          currentHour += 24;
+        }
+        return closingHour - currentHour;
+      }
+
+      function updateAvailableList() {
+        const areaFilter = document.getElementById("areaFilter").value;
+        const mealFilter = document.getElementById("mealFilter").value;
+        const typeFilter = document.getElementById("typeFilter").value;
+        const priceFilter = document.getElementById("priceFilter").value;
+        const now = new Date();
+
+        const filtered = restaurants.filter((r) => {
+          let areaMatch = true;
+          if (areaFilter !== "") {
+            if (Array.isArray(r.area)) {
+              areaMatch = r.area.includes(areaFilter);
+            } else {
+              areaMatch = r.area === areaFilter;
+            }
+          }
+
+          const mealMatch = mealFilter === "" || r.meal.includes(mealFilter);
+          const typeMatch = typeFilter === "" || r.type.includes(typeFilter);
+          const priceMatch =
+            priceFilter === "" || r.price.includes(priceFilter);
+          const openMatch = isOpenNow(r.open, r.close, now);
+
+          return areaMatch && mealMatch && typeMatch && priceMatch && openMatch;
+        });
+
+        const listDiv = document.getElementById("availableList");
+        if (filtered.length === 0) {
+          listDiv.innerHTML =
+            "<i>No restaurants match the filters right now.</i>";
+        } else {
+          listDiv.innerHTML =
+            "<strong>Available:</strong><br>" +
+            filtered.map((r) => r.name).join(", ");
+        }
+      }
+
+      function pickRestaurant() {
+        const areaFilter = document.getElementById("areaFilter").value;
+        const mealFilter = document.getElementById("mealFilter").value;
+        const typeFilter = document.getElementById("typeFilter").value;
+        const priceFilter = document.getElementById("priceFilter").value;
+        const now = new Date();
+
+        const filtered = restaurants.filter((r) => {
+          let areaMatch = true;
+          if (areaFilter !== "") {
+            if (Array.isArray(r.area)) {
+              areaMatch = r.area.includes(areaFilter);
+            } else {
+              areaMatch = r.area === areaFilter;
+            }
+          }
+
+          const mealMatch = mealFilter === "" || r.meal.includes(mealFilter);
+          const typeMatch = typeFilter === "" || r.type.includes(typeFilter);
+          const priceMatch =
+            priceFilter === "" || r.price.includes(priceFilter);
+          const openMatch = isOpenNow(r.open, r.close, now);
+
+          return areaMatch && mealMatch && typeMatch && priceMatch && openMatch;
+        });
+
+        if (filtered.length === 0) {
+          document.getElementById("result").innerText =
+            "No restaurants match the filters right now.";
+          document.getElementById("clearResultBtn").style.display = "block";
+          return;
+        }
+
+        // Show spinner animation first
+        const spinner = document.getElementById("spinner");
+        spinner.style.display = "block";
+        document.getElementById("result").style.opacity = 0;
+
+        setTimeout(() => {
+          spinner.style.display = "none";
+
+          const randomIndex = Math.floor(Math.random() * filtered.length);
+          const selected = filtered[randomIndex];
+
+          const openTime = formatHour(selected.open);
+          const closeTime = formatHour(selected.close);
+          const areaText = Array.isArray(selected.area)
+            ? selected.area.join(", ")
+            : selected.area;
+
+          // Determine status
+          let status = "";
+          let badgeClass = "";
+          const hoursUntilClose = timeUntilClose(
+            selected.open,
+            selected.close,
+            now
+          );
+
+          if (!isOpenNow(selected.open, selected.close, currentHour)) {
+            status = "❌ Closed";
+            badgeClass = "closed";
+          } else if (hoursUntilClose <= 1) {
+            status = "🕒 Closing Soon";
+            badgeClass = "closing";
+          } else {
+            status = "✅ Open Now";
+            badgeClass = "open";
+          }
+
+          const closingCountdown = isOpenNow(
+            selected.open,
+            selected.close,
+            currentHour
+          )
+            ? `<br>⏳ Closing in ~${hoursUntilClose} hour(s)`
+            : "";
+
+          document.getElementById("result").innerHTML = `
+          🍽️ <strong>${selected.name}</strong><br>
+          📍 Area: ${areaText}<br>
+          🕑 Hours: ${openTime} - ${closeTime}<br>
+          <span class="badge ${badgeClass}">${status}</span>
+          ${closingCountdown}
+        `;
+
+          document.getElementById("result").style.opacity = 1;
+          document.getElementById("clearResultBtn").style.display = "block";
+        }, 1200); // Spinner lasts 1.2 seconds
+      }
+
+      function clearResult() {
+        document.getElementById("result").innerText = "";
+        document.getElementById("clearResultBtn").style.display = "none";
+      }
+
+      function clearFilters() {
+        document.getElementById("areaFilter").value = "";
+        document.getElementById("mealFilter").value = "";
+        updateAvailableList();
+      }
+
+      updateAvailableList();
+    </script>
+  </body>
+</html>
